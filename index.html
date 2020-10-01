@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Blog Manager</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootswatch/4.5.0/simplex/bootstrap.min.css">
+
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <a class="navbar-brand">Blog Manager Api</a>
+  <div class="collapse navbar-collapse" id="navbarColor01">
+    <ul class="navbar-nav mr-auto">
+      <li>
+        <a class="nav-link" href="/Blogmanager/">Home <span class="sr-only">(current)</span></a>
+      </li>
+  </div>
+</nav>
+<div class="container">
+  <h1>Add Blog</h1>
+  <form id ='blogForm'>
+    <div class="form-group">
+      <label>Text</label>
+      <input type="text" id="text" class="form-control"></label>
+    </div>
+    <div class="form-group">
+      <label>Body</label>
+      <textarea id="body" class="form-control"></textarea>
+    </div>
+    <input  type="submit" value="submit" class="btn btn-primary">
+  </form>
+  <ul id='blogs' class="list-group">
+    <hr>
+  </ul>
+</div>
+
+
+<script src="https://code.jquery.com/jquery-1.12.4.js" integrity="sha256-Qw82+bXyGq6MydymqBxNPYTaUXXq7c8v3CwiYwLLNXU=" crossorigin="anonymous"></script>
+<script type="text/javascript">
+  $(document).ready(function(){
+    getBlogs();
+    //submit event
+    $('#blogForm').on('submit',function(e){
+      e.preventDefault();
+
+      let text = $('#text').val();
+      let body = $('#body').val();
+
+      addBlog(text,body);
+    });
+
+
+    //Delete event
+    $('body').on('click','.deleteLink',function(e){
+      e.preventDefault();
+
+      let id =$(this).data('id');
+      //console.log(id);
+      deleteBlog(id);
+    });
+
+    //Delete Blog
+    function deleteBlog(id) {
+      $.ajax({
+        method: 'POST',
+        url:'http://localhost/BlogApi/public/api/blogs/'+id,
+        data: {_method:'DELETE'}
+      }).done(function(blog){
+        alert('Blog #' +id+'removed');
+        location.reload();
+      });
+    }
+
+
+    //Edit event
+    $('body').on('click','.editLink',function(e){
+      e.preventDefault();
+      let id=$(this).data('id');
+      let text=$('#text').val();
+      let body=$('#body').val();
+      editBlog(id,text,body);
+    });
+
+    //editing
+    function editBlog(id,text,body)
+    {
+      console.log(id,text,body);
+      $.ajax({
+        method: 'POST',
+        url:'http://localhost/BlogApi/public/api/blogs/'+id,
+        data: {_method:'PUT',text:text,body:body}
+      }).done(function(blog){
+        alert('Blog #' +id+'updated');
+        location.reload();
+    });
+    }
+
+    //Update
+    //insert blog using API
+    function addBlog(text,body){
+      $.ajax({
+        method: 'POST',
+        url:'http://localhost/BlogApi/public/api/blogs',
+        data: {text:text,body:body}
+      }).done(function(blog){
+        alert('Blog #' + blog.id+'added');
+        location.reload();
+      });
+    }
+
+
+    //get blogs from API
+    function getBlogs()
+    {
+      $.ajax(
+      {
+        url:'http://localhost/BlogApi/public/api/blogs'
+      }).done(function(blogs){
+        let output=""
+        $.each(blogs,function(key, blog){
+          output +=`
+          <li class="list-group-item">
+            <strong>${blog.text}: </strong>${blog.body} <a href="#" class="deleteLink" data-id="${blog.id}">Delete</a><a href="#" class="editLink" data-id="${blog.id}" data-text="${blog.text}" data-body="${blog.body}">Edit</a>
+          </li>
+          `
+        });
+        $('#blogs').append(output);
+      });
+    }
+  });
+</script>
+  </body>
+</html>
